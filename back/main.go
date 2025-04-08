@@ -4,8 +4,8 @@ import (
 	"back/Handler"
 	"back/createTable"
 	"database/sql"
+	"github.com/gin-gonic/gin"
 	_ "github.com/glebarez/sqlite"
-	"net/http"
 )
 
 func main() {
@@ -13,6 +13,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	r := gin.Default()
 
 	defer func(db *sql.DB) {
 		err := db.Close()
@@ -23,8 +25,9 @@ func main() {
 
 	createTable.CreateTable(db)
 
-	http.HandleFunc("/", Handler.Handler)
-	err = http.ListenAndServe(":8080", nil)
+	r.GET("/", Handler.GetHandler(db))
+
+	err = r.Run()
 	if err != nil {
 		panic(err)
 	}
