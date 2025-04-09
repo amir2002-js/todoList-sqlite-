@@ -12,6 +12,7 @@ type Todos struct {
 	Title string `json:"title"`
 }
 
+// GetHandler GET ALL
 func GetHandler(db *sql.DB) gin.HandlerFunc {
 
 	return func(c *gin.Context) {
@@ -40,5 +41,33 @@ func GetHandler(db *sql.DB) gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, todos)
+	}
+}
+
+// GetHandlerById Get by ID
+func GetHandlerById(db *sql.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		//codes
+	}
+}
+
+// PostHandler post
+func PostHandler(db *sql.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		//codes
+	}
+}
+
+// PutHandler put
+func PutHandler(db *sql.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		//codes
+	}
+}
+
+// DeleteHandler delete
+func DeleteHandler(db *sql.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		//codes
 	}
 }

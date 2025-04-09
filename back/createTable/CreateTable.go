@@ -4,6 +4,7 @@ import "database/sql"
 
 func CreateTable(db *sql.DB) {
 
+	// query
 	q := `CREATE TABLE IF NOT EXISTS todos (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		title TEXT NOT NULL
