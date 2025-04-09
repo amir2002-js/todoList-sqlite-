@@ -1,8 +1,8 @@
 package main
 
 import (
-	"back/Handler"
 	"back/createTable"
+	"back/router"
 	"database/sql"
 	"github.com/gin-gonic/gin"
 	_ "github.com/glebarez/sqlite"
@@ -25,7 +25,7 @@ func main() {
 
 	createTable.CreateTable(db)
 
-	r.GET("/", Handler.GetHandler(db))
+	router.RoutersGroup(r, db)
 
 	err = r.Run()
 	if err != nil {
