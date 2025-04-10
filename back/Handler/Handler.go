@@ -2,6 +2,7 @@ package Handler
 
 import (
 	"database/sql"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -47,7 +48,22 @@ func GetHandler(db *sql.DB) gin.HandlerFunc {
 // GetHandlerById Get by ID
 func GetHandlerById(db *sql.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		//codes
+		parId := c.Param("id")
+
+		data := db.QueryRow("SELECT id , title FROM todo WHERE id = ?", parId)
+
+		var todo Todos
+
+		err := data.Scan(&todo.ID, &todo.Title)
+		if errors.Is(err, sql.ErrNoRows) {
+			c.JSON(http.StatusFound, gin.H{"message": "not found"})
+			return
+		} else if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, todo)
 	}
 }
 
