@@ -4,13 +4,14 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
 )
 
 type Todos struct {
-	ID    int    `json:"id"`
-	Title string `json:"title"`
+	ID     int    `json:"id"`
+	Title  string `json:"title"`
+	IsDone bool   `json:"isDone"`
+	About  string `json:"about"`
 }
 
 // GetHandler GET ALL
@@ -18,7 +19,7 @@ func GetHandler(db *sql.DB) gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 
-		row, err := db.Query(`SELECT id ,title FROM "todo"`)
+		row, err := db.Query(`SELECT id ,title , about , isDone FROM "todo"`)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			return
@@ -27,16 +28,18 @@ func GetHandler(db *sql.DB) gin.HandlerFunc {
 		defer func(row *sql.Rows) {
 			err := row.Close()
 			if err != nil {
-				log.Println(err)
+				c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+				return
 			}
 		}(row)
 
 		var todos []Todos
 		for row.Next() {
 			var t Todos
-			err = row.Scan(&t.ID, &t.Title)
+			err = row.Scan(&t.ID, &t.Title, &t.About, &t.IsDone)
 			if err != nil {
-				panic(err)
+				c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+				return
 			}
 			todos = append(todos, t)
 		}
@@ -50,7 +53,7 @@ func GetHandlerById(db *sql.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		parId := c.Param("id")
 
-		data := db.QueryRow("SELECT id , title FROM todo WHERE id = ?", parId)
+		data := db.QueryRow("SELECT id , title , about , isDone FROM todo WHERE id = ?", parId)
 
 		var todo Todos
 
@@ -77,13 +80,7 @@ func PostHandler(db *sql.DB) gin.HandlerFunc {
 			return
 		}
 
-		//err = checkTodo(&todo)
-		//if err != nil {
-		//	c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-		//	return
-		//}
-
-		result, err := db.Exec("INSERT INTO todos (title) VALUES (?)", todo.Title)
+		result, err := db.Exec("INSERT INTO todos (title , about , isDone) VALUES (? , ? , ?)", todo.Title, todo.About, todo.IsDone)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			return
@@ -100,7 +97,25 @@ func PostHandler(db *sql.DB) gin.HandlerFunc {
 // PutHandler update
 func PutHandler(db *sql.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		//codes
+		var todo Todos
+		parId := c.Param("id")
+
+		err := c.ShouldBindJSON(&todo)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			return
+		}
+
+		result, err := db.Exec("UPDATE todo SET title = ?, about = ?, isDone = ? WHERE id = ?", todo.Title, todo.About, todo.IsDone, parId)
+		if index, err := result.LastInsertId(); index == 0 {
+			c.JSON(http.StatusNotFound, gin.H{"message": "not found"})
+			return
+		} else if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "updated successfully"})
 	}
 }
 
