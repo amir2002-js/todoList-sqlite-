@@ -57,7 +57,7 @@ func GetHandlerById(db *sql.DB) gin.HandlerFunc {
 
 		var todo Todos
 
-		err := data.Scan(&todo.ID, &todo.Title)
+		err := data.Scan(&todo.ID, &todo.Title, &todo.About, &todo.IsDone)
 		if errors.Is(err, sql.ErrNoRows) {
 			c.JSON(http.StatusFound, gin.H{"message": "not found"})
 			return
@@ -80,7 +80,7 @@ func PostHandler(db *sql.DB) gin.HandlerFunc {
 			return
 		}
 
-		result, err := db.Exec("INSERT INTO todos (title , about , isDone) VALUES (? , ? , ?)", todo.Title, todo.About, todo.IsDone)
+		result, err := db.Exec("INSERT INTO todo (title , about , isDone) VALUES (? , ? , ?)", todo.Title, todo.About, todo.IsDone)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			return
