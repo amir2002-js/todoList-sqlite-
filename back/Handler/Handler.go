@@ -74,7 +74,7 @@ func PostHandler(db *sql.DB) gin.HandlerFunc {
 	}
 }
 
-// PutHandler put
+// PutHandler update
 func PutHandler(db *sql.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//codes
@@ -84,6 +84,22 @@ func PutHandler(db *sql.DB) gin.HandlerFunc {
 // DeleteHandler delete
 func DeleteHandler(db *sql.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		//codes
+		parId := c.Param("id")
+
+		result, err := db.Exec("DELETE FROM todo WHERE id = ?", parId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			return
+		}
+
+		rowsAffected, err := result.RowsAffected()
+		if rowsAffected == 0 {
+			c.JSON(http.StatusNotFound, gin.H{"message": "not found"})
+			return
+		} else if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "deleted successfully"})
 	}
 }
